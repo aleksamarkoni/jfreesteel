@@ -55,6 +55,7 @@ public class GUIPanel extends JPanel {
         "net.devbase.jfreesteel.gui.jfreesteel-lib-gui"); //$NON-NLS-1$
 
     private JImagePanel photo;
+    private JImagePanel pdfOutput;
     private Image throbber;
 
     protected JPanel toolbar;
@@ -74,13 +75,22 @@ public class GUIPanel extends JPanel {
     public void clearDetailsAndPhoto() {
         setDetails("", "", "", "", "", "", "", "", "", "");
         setPhoto(null);
+        // setPdfOutput(null);
     }
 
     public void setPhoto(Image image) {
-        if(image == null) {
-            photo.setImage(throbber);
+        setProperImage(photo, image);
+    }
+
+    public void setPdfOutput(Image image) {
+        setProperImage(pdfOutput, image);
+    }
+
+    private void setProperImage(JImagePanel imagePanel, Image image) {
+        if (image == null) {
+            imagePanel.setImage(throbber);
         } else {
-            photo.setImage(image);
+            imagePanel.setImage(image);
         }
     }
 

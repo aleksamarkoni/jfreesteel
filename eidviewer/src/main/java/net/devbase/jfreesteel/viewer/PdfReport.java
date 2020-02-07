@@ -65,7 +65,7 @@ public class PdfReport
         drawRulers(cb, 2f, 782, 747);
         drawRulers(cb, 1.5f, 554, 529, 304, 279);
 
-        String fontPath = getClass().getResource("/net/devbase/jfreesteel/viewer/DejaVuSans.ttf").toString();
+        String fontPath = getClass().getResource("/net/devbase/jfreesteel/viewer/ariel.ttf").toString();
         BaseFont bf = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         cb.beginText();
 
