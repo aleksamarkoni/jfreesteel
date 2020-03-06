@@ -3,18 +3,18 @@ package net.devbase.jfreesteel.viewer;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.*;
 import net.devbase.jfreesteel.EidInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 public class FormPdfReport {
     java.awt.Image photo;
     EidInfo info;
+    public static final String SRC = "izjava2.pdf";
 
     public FormPdfReport(EidInfo info, java.awt.Image photo) {
         this.info = info;
@@ -22,25 +22,37 @@ public class FormPdfReport {
     }
 
     public void write(final String filename) throws IOException, DocumentException {
-
-        Document document = new Document();
-        document.setPageSize(PageSize.A4);
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(filename));
-        document.open();
-        writeDocument(document, writer);
-        document.close();
-        writer.close();
+        PdfReader pdfReader = new PdfReader(SRC);
+        PdfStamper stamper = new PdfStamper(pdfReader, new FileOutputStream(filename));
+        fillOutForm(stamper);
+        stamper.close();
     }
 
     public ByteArrayOutputStream createPDF() throws DocumentException, IOException {
-        Document doc = new Document();
         ByteArrayOutputStream baosPDF = new ByteArrayOutputStream();
-        PdfWriter docWriter = PdfWriter.getInstance(doc, baosPDF);
-        doc.open();
-        writeDocument(doc, docWriter);
-        doc.close();
-        docWriter.close();
+        PdfReader reader = new PdfReader(SRC);
+        PdfStamper stamper = new PdfStamper(reader, baosPDF);
+        fillOutForm(stamper);
+        stamper.close();
+        reader.close();
         return baosPDF;
+    }
+
+    private void fillOutForm(PdfStamper stamper) throws DocumentException, IOException {
+        AcroFields form = stamper.getAcroFields();
+        form.setField("izborna_lista", "Староседеоци Метла 2020 - Иван Матовић");
+        form.setField("kandidat", "Иван Матовић");
+        form.setField("prezime_i_ime", info.getSurname() + " " + info.getGivenName());
+        form.setField("adresa", info.getAddress(null, null, null));
+        form.setField("jmbg", info.getPersonalNumber());
+        form.setField("ime_i_prezime_2", info.getNameFull());
+        form.setField("datum_rodjenja", info.getDateOfBirth());
+        form.setField("adresa_2", info.getPlaceFull("улаз %s", "%s. спрат", "бр. %s"));
+        form.setField("dokument", "лична карта");
+
+        String documentInfo = String.format(
+                    "%s, %s, %s, %s", "лична карта", info.getDocRegNo(), info.getIssuingDate(), info.getIssuingAuthority());
+        form.setField("info_o_dokumentu", documentInfo);
     }
 
     private void writeDocument(Document doc, PdfWriter writer) throws DocumentException, IOException {
@@ -70,9 +82,6 @@ public class FormPdfReport {
         drawVerticalLine(cb, 1f, 59, 510, 460);
         drawVerticalLine(cb, 1f, 536, 510, 460);
 
-        drawHorizontalLine(cb, 1f, 250, 450, 370);
-
-
         String fontPath = getClass().getResource("/net/devbase/jfreesteel/viewer/arial.ttf").toString();
         BaseFont bf = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
@@ -81,6 +90,14 @@ public class FormPdfReport {
 
         String boldFontPath = getClass().getResource("/net/devbase/jfreesteel/viewer/arialBoldFont.ttf").toString();
         BaseFont boldBf = BaseFont.createFont(boldFontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+
+        drawHorizontalLine(cb, 1f, 300, 536, 380);
+        drawHorizontalLine(cb, 1f, 300, 536, 340);
+        //drawHorizontalLine(cb, 1f, 300, 536, 300);
+        drawHorizontalLine(cb, 1f, 300, 536, 260);
+        drawHorizontalLine(cb, 1f, 300, 536, 220);
+
+        drawJmbgBox(cb, 300, 300);
 
         cb.beginText();
 
@@ -103,8 +120,29 @@ public class FormPdfReport {
         writeText(cb, "(назив подносиоца изборне листе)", 215, 445);
 
         cb.setFontAndSize(boldBf, 10);
-        writeText(cb, "БИРАЧ", 450, 400);
+        int biracTextWidth = (int) boldBf.getWidthPoint("БИРАЧ", 10);
+        int biracStartPosition = 418 - biracTextWidth / 2;
+        writeText(cb, "БИРАЧ", biracStartPosition, 410);
 
+        cb.setFontAndSize(boldBf, 8);
+        int potpisTextWidth = (int) boldBf.getWidthPoint("(потпис)", 8);
+        int potpisStartPosition = 418 - potpisTextWidth / 2;
+        writeText(cb, "(потпис)", potpisStartPosition, 370);
+
+        cb.setFontAndSize(boldBf, 8);
+        int piiTextWidth = (int) boldBf.getWidthPoint("(презиме и име)", 8);
+        int piiStartPosition = 418 - piiTextWidth / 2;
+        writeText(cb, "(презиме и име)", piiStartPosition, 330);
+
+        cb.setFontAndSize(boldBf, 8);
+        int jmbgTextWidth = (int) boldBf.getWidthPoint("(ЈМБГ)", 8);
+        int jmbgStartPosition = 418 - jmbgTextWidth / 2;
+        writeText(cb, "(ЈМБГ)", jmbgStartPosition, 290);
+
+        cb.setFontAndSize(boldBf, 8);
+        int piasTextWidth = (int) boldBf.getWidthPoint("(пребивалиште и адреса становања)", 8);
+        int piasStartPosition = 418 - piasTextWidth / 2;
+        writeText(cb, "(пребивалиште и адреса становања)", piasStartPosition, 210);
 
         //writeText(cb, "ЧИТАЧ  ЕЛЕКТРОНСКЕ  ЛИЧНЕ  КАРТЕ: ШТАМПА  ПОДАТАКА", 62, 760);
 
@@ -132,6 +170,20 @@ public class FormPdfReport {
 //        writeLine(cb, "Важи до:", info.getExpiryDate(), 190);
 
         cb.endText();
+    }
+
+    private void drawJmbgBox(PdfContentByte cb, int startX, int startY) {
+
+        for (int i = 0; i < 13; i++) {
+            int x = startX + i * 18;
+            int y = startY;
+            cb.moveTo(x, y);
+            cb.lineTo(x, y + 18);
+            cb.lineTo(x + 18, y + 18);
+            cb.lineTo(x + 18, y);
+            cb.lineTo(x, y);
+            cb.stroke();
+        }
     }
 
     private void writePlace(PdfContentByte cb, EidInfo info) throws DocumentException, IOException {

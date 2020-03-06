@@ -302,7 +302,7 @@ public class EidViewer extends JPanel implements ReaderListener {
             button = newButton("SavePDF", new SavePDFActionListener());
             toolbar.add(button, BorderLayout.WEST);
             previewButton = newButton("PreviewPDF", new PreviewPDFActionListener());
-            toolbar.add(previewButton, BorderLayout.EAST);
+            //toolbar.add(previewButton, BorderLayout.EAST);
         }
 
         private JButton newButton(String text, ActionListener listener) {

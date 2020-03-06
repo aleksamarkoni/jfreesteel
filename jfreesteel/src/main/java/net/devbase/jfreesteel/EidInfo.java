@@ -214,6 +214,36 @@ public class EidInfo {
             "%s %s %s", get(Tag.GIVEN_NAME), get(Tag.PARENT_GIVEN_NAME), get(Tag.SURNAME));
     }
 
+    public String getAddress(String entranceLabelFormat, String floorLabelFormat, String appartmentLabelFormat) {
+        StringBuilder out = new StringBuilder();
+
+        entranceLabelFormat = sanitizeFormat(entranceLabelFormat);
+        floorLabelFormat = sanitizeFormat(floorLabelFormat);
+        appartmentLabelFormat = sanitizeFormat(appartmentLabelFormat);
+
+        // Main street, Main street 11, Main street 11A
+        appendTo(out, Tag.STREET);
+        appendTo(out, " ", Tag.HOUSE_NUMBER);
+        appendTo(out, Tag.HOUSE_LETTER);
+
+        // For entranceLabel = "ulaz %s" gives "Main street 11A ulaz 2"
+        appendTo(out, " ", entranceLabelFormat, Tag.ENTRANCE);
+
+        // For floorLabel = "%s. sprat" gives "Main street 11 ulaz 2, 5. sprat"
+        appendTo(out, ", ", floorLabelFormat, Tag.FLOOR);
+
+        if (has(Tag.APPARTMENT_NUMBER)) {
+            // For appartmentLabel "br. %s" gives "Main street 11 ulaz 2, 5. sprat, br. 4"
+            if (has(Tag.ENTRANCE) || has(Tag.FLOOR)) {
+                appendTo(out, ", ", appartmentLabelFormat, Tag.APPARTMENT_NUMBER);
+            } else {
+                // short form: Main street 11A/4
+                appendTo(out, "/", Tag.APPARTMENT_NUMBER);
+            }
+        }
+        return out.toString();
+    }
+
     /**
      * Get place of residence as multiline string. Format parameters can be used to provide better
      * output or null/empty strings can be passed for no special formating.
@@ -264,12 +294,12 @@ public class EidInfo {
             }
         }
 
-        appendTo(out, "\n", Tag.PLACE);
         appendTo(out, ", ", Tag.COMMUNITY);
+        appendTo(out, ", ", Tag.PLACE);
 
         String rawState = get(Tag.STATE);
 
-        out.append("\n");
+        out.append(", ");
 
         if (rawState.contentEquals("SRB")) {
             // small cheat for a better output
