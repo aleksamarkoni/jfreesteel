@@ -75,7 +75,7 @@ SectionEnd
 Section "uninstall"
   delete "$INSTDIR\eidviewer.exe"
   delete "$INSTDIR\uninstall.exe"
-  RMDir /r "$INSTDIR\dependencies"
+  RMDir /r "$INSTDIR\dependency"
 SectionEnd
 
 Function .onInit
