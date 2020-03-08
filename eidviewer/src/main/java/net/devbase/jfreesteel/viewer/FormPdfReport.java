@@ -12,13 +12,18 @@ import java.io.IOException;
 import java.util.Map;
 
 public class FormPdfReport {
+
     java.awt.Image photo;
     EidInfo info;
+    BaseFont baseFont;
     public static final String SRC = "izjava2.pdf";
 
-    public FormPdfReport(EidInfo info, java.awt.Image photo) {
+    public FormPdfReport(EidInfo info, java.awt.Image photo) throws IOException, DocumentException {
         this.info = info;
         this.photo = photo;
+        final String fontPath = getClass().getResource("/net/devbase/jfreesteel/viewer/FreeSans.ttf").toString();
+        this.baseFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, false, null, null, false);
+
     }
 
     public void write(final String filename) throws IOException, DocumentException {
@@ -33,6 +38,7 @@ public class FormPdfReport {
         PdfReader reader = new PdfReader(SRC);
         PdfStamper stamper = new PdfStamper(reader, baosPDF);
         fillOutForm(stamper);
+        stamper.setFormFlattening(true);
         stamper.close();
         reader.close();
         return baosPDF;
@@ -40,20 +46,26 @@ public class FormPdfReport {
 
     private void fillOutForm(PdfStamper stamper) throws DocumentException, IOException {
         AcroFields form = stamper.getAcroFields();
-        form.setField("izborna_lista", "Староседеоци Метла 2020 - Иван Матовић");
-        form.setField("kandidat", "Иван Матовић");
-        form.setField("prezime_i_ime", info.getSurname() + " " + info.getGivenName());
-        form.setField("adresa", info.getAddress(null, null, null));
-        form.setField("jmbg", info.getPersonalNumber());
-        form.setField("ime_i_prezime_2", info.getNameFull());
-        form.setField("datum_rodjenja", info.getDateOfBirth());
-        form.setField("adresa_2", info.getAddressWithPlaceAndState(
+        form.setGenerateAppearances(true);
+        setFormField(form, "izborna_lista", "Староседеоци Метла 2020 - Иван Матовић");
+        setFormField(form, "kandidat", "Иван Матовић");
+        setFormField(form, "prezime_i_ime", info.getSurname() + " " + info.getGivenName());
+        setFormField(form, "adresa", info.getAddress(null, null, null));
+        setFormField(form, "jmbg", info.getPersonalNumber());
+        setFormField(form, "ime_i_prezime_2", info.getNameFull());
+        setFormField(form, "datum_rodjenja", info.getDateOfBirth());
+        setFormField(form, "adresa_2", info.getAddressWithPlaceAndState(
                 "улаз %s", "%s. спрат", "бр. %s"));
-        form.setField("dokument", "лична карта");
+        setFormField(form, "dokument", "лична карта");
 
         String documentInfo = String.format(
                     "%s, %s, %s, %s", "лична карта", info.getDocRegNo(), info.getIssuingDate(), info.getIssuingAuthority());
-        form.setField("info_o_dokumentu", documentInfo);
+        setFormField(form, "info_o_dokumentu", documentInfo);
+    }
+
+    private void setFormField(AcroFields form, String formFieldName, String value) throws DocumentException, IOException {
+        form.setFieldProperty(formFieldName, "textfont", baseFont, null);
+        form.setField(formFieldName, value);
     }
 
     private void writeDocument(Document doc, PdfWriter writer) throws DocumentException, IOException {
