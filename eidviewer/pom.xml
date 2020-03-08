@@ -83,17 +83,22 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>org.digitalmediaserver</groupId>
                 <artifactId>nsis-maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>1.0.2</version>
+                <configuration>
+                    <nsisDir>${env.NSISDIR}</nsisDir>
+                    <makensisExecutable>${env.NSISDIR}\makensis.exe</makensisExecutable>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>install</phase>
                         <goals>
-                            <goal>generate-project</goal>
-                            <goal>compile</goal>
+                            <goal>generate-headerfile</goal>
+                            <goal>make</goal>
                         </goals>
                         <configuration>
+                            <scriptFile>${project.basedir}/setup.nsi</scriptFile>
                             <outputFile>${project.build.directory}/jfreesteel-${project.build.finalName}-unsigned.exe</outputFile>
                         </configuration>
                     </execution>

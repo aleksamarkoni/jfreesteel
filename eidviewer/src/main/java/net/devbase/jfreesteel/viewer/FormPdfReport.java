@@ -47,7 +47,8 @@ public class FormPdfReport {
         form.setField("jmbg", info.getPersonalNumber());
         form.setField("ime_i_prezime_2", info.getNameFull());
         form.setField("datum_rodjenja", info.getDateOfBirth());
-        form.setField("adresa_2", info.getPlaceFull("улаз %s", "%s. спрат", "бр. %s"));
+        form.setField("adresa_2", info.getAddressWithPlaceAndState(
+                "улаз %s", "%s. спрат", "бр. %s"));
         form.setField("dokument", "лична карта");
 
         String documentInfo = String.format(

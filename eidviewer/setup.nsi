@@ -5,7 +5,6 @@
 
   !include MUI.nsh
   !include Sections.nsh
-  !include target\project.nsh
 
 ;======================================================
 ; Installer Information
@@ -63,8 +62,8 @@
 Section "EidViewer"
     SetOutPath $INSTDIR
     SetOverwrite on
-    File /r ${PROJECT_BUILD_DIR}/dependency
-    File ${PROJECT_BUILD_DIR}/eidviewer.exe
+    File /r ${PROJECT_BUILD_DIR}\dependency
+    File ${PROJECT_BUILD_DIR}\eidviewer.exe
 
     writeUninstaller "$INSTDIR\uninstall.exe"
 

@@ -258,6 +258,73 @@ public class EidInfo {
      * @param appartmentLabelFormat String to format apartment label or null
      * @return Nicely formatted place of residence as multiline string
      *
+     * FIXME: Use one parameterized format string to allow both "Main street 11" and
+     * "11 Main street"
+     *
+     * FIXME: Think about how to handle short form format with missing ENTRANCE/FLOOR
+     * label (line 298).
+     */
+    public String getAddressWithPlaceAndState(
+            String entranceLabelFormat, String floorLabelFormat, String appartmentLabelFormat) {
+
+        StringBuilder out = new StringBuilder();
+
+        entranceLabelFormat = sanitizeFormat(entranceLabelFormat);
+        floorLabelFormat = sanitizeFormat(floorLabelFormat);
+        appartmentLabelFormat = sanitizeFormat(appartmentLabelFormat);
+
+        // Main street, Main street 11, Main street 11A
+        appendTo(out, Tag.STREET);
+        appendTo(out, " ", Tag.HOUSE_NUMBER);
+        appendTo(out, Tag.HOUSE_LETTER);
+
+        // For entranceLabel = "ulaz %s" gives "Main street 11A ulaz 2"
+        appendTo(out, " ", entranceLabelFormat, Tag.ENTRANCE);
+
+        // For floorLabel = "%s. sprat" gives "Main street 11 ulaz 2, 5. sprat"
+        appendTo(out, ", ", floorLabelFormat, Tag.FLOOR);
+
+        if (has(Tag.APPARTMENT_NUMBER)) {
+            // For appartmentLabel "br. %s" gives "Main street 11 ulaz 2, 5. sprat, br. 4"
+            if (has(Tag.ENTRANCE) || has(Tag.FLOOR)) {
+                appendTo(out, ", ", appartmentLabelFormat, Tag.APPARTMENT_NUMBER);
+            } else {
+                // short form: Main street 11A/4
+                appendTo(out, "/", Tag.APPARTMENT_NUMBER);
+            }
+        }
+
+        appendTo(out, ", ", Tag.COMMUNITY);
+        appendTo(out, ", ", Tag.PLACE);
+
+        String rawState = get(Tag.STATE);
+
+        out.append(", ");
+
+        if (rawState.contentEquals("SRB")) {
+            // small cheat for a better output
+            out.append("REPUBLIKA SRBIJA");
+        } else {
+            out.append(rawState);
+        }
+
+        return out.toString();
+    }
+
+    /**
+     * Get place of residence as multiline string. Format parameters can be used to provide better
+     * output or null/empty strings can be passed for no special formating.
+     *
+     * For example if floorLabelFormat is "%s. sprat" returned string will contain "5. sprat" for
+     * floor number 5.
+     *
+     * Recommended values for Serbian are "ulaz %s", "%s. sprat" and "br. %s"
+     *
+     * @param entranceLabelFormat String to format entrance label or null
+     * @param floorLabelFormat String to format floor label or null
+     * @param appartmentLabelFormat String to format apartment label or null
+     * @return Nicely formatted place of residence as multiline string
+     *
      * FIXME: Use one parameterized format string to allow both "Main street 11" and 
      * "11 Main street"
      * 
@@ -294,12 +361,12 @@ public class EidInfo {
             }
         }
 
+        appendTo(out, "\n", Tag.PLACE);
         appendTo(out, ", ", Tag.COMMUNITY);
-        appendTo(out, ", ", Tag.PLACE);
 
         String rawState = get(Tag.STATE);
 
-        out.append(", ");
+        out.append("\n");
 
         if (rawState.contentEquals("SRB")) {
             // small cheat for a better output
