@@ -47,10 +47,10 @@ public class FormPdfReport {
     private void fillOutForm(PdfStamper stamper) throws DocumentException, IOException {
         AcroFields form = stamper.getAcroFields();
         form.setGenerateAppearances(true);
-        setFormField(form, "izborna_lista", "Староседеоци Метла 2020 - Иван Матовић");
-        setFormField(form, "kandidat", "Иван Матовић");
+        setFormField(form, "izborna_lista", "Метла 2020 - Староседеоци - Иван Матовић");
+        setFormField(form, "kandidat", "Група грађана Метла 2020 - Староседеоци - Иван Матовић");
         setFormField(form, "prezime_i_ime", info.getSurname() + " " + info.getGivenName());
-        setFormField(form, "adresa", info.getAddress(null, null, null));
+        setFormField(form, "adresa", info.getPlace() + ", " + info.getAddress(null, null, null));
         setFormField(form, "jmbg", info.getPersonalNumber());
         setFormField(form, "ime_i_prezime_2", info.getNameFull());
         setFormField(form, "datum_rodjenja", info.getDateOfBirth());
